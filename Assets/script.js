@@ -1,20 +1,20 @@
 /**
  * BILLIGT FILAMENT - JAVASCRIPT ENGINE 2026
  * Version Finale: Edition Skilteproduktion (Français)
- * API ATUALIZADA: 9D20D11BF004359263F6665EB4676D07EB47FE50B55FE9D55EE6C9C2A9EA0CA5
+ * FOCUS: Mise à jour du nom du bouton et logique de prix promotionnel
  */
 
-// URL DA NOVA API QUE VOCÊ PASSOU
+// URL DE L'API
 const API_URL = 'https://www.datamarked.dk/?id=8016&apikey=9D20D11BF004359263F6665EB4676D07EB47FE50B55FE9D55EE6C9C2A9EA0CA5';
 
 let allProducts = [];
 let activeCategory = 'all';
 
-// Filtres de Catégorie (Keywords para organizar automaticamente)
+// Filtres de Catégorie (Keywords)
 const materialKeywords = ['PLA', 'PETG', 'SILK', 'ABS', 'TPU', 'ASA', 'NYLON', 'WOOD', 'CARBON'];
 const printerKeywords = ['PRINTER', 'CREALITY', 'BAMBU', 'ANYCUBIC', 'ENDER', 'VORON', 'ELEGOO', 'MACHINE', 'RESIN'];
 
-// Formatage Prix (Danois/Euro)
+// Formatage Prix (Français / Euro)
 const formatPrice = (p) => p.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /**
@@ -43,18 +43,31 @@ function initNavigation() {
 }
 
 /**
- * 2. CHARGEMENT DES PRODUITS DE L'API
+ * 2. CHARGEMENT DES PRODUITS DE L'API (LOGIQUE SALEPRICE)
  */
 async function loadProducts() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
 
-        // Mapeamento dos dados da API para o nosso formato
         allProducts = data.map(i => {
-            const titleUpper = i.title.toUpperCase();
-            let cat = 'AUTRES';
+            const titleUpper = (i.title || "").toUpperCase();
             
+            // Fonction pour nettoyer les prix de l'API
+            const cleanPrice = (val) => {
+                if (!val) return 0;
+                let s = String(val).replace(/[^\d.,]/g, '');
+                if (s.includes('.') && s.includes(',')) s = s.replace(/\./g, '');
+                return parseFloat(s.replace(',', '.')) || 0;
+            };
+
+            const pNormal = cleanPrice(i.price);
+            const pSale = cleanPrice(i.saleprice);
+
+            // Priorité au prix de vente (saleprice) s'il existe
+            let finalPrice = (pSale > 0) ? pSale : pNormal;
+
+            let cat = 'AUTRES';
             if (printerKeywords.some(k => titleUpper.includes(k))) {
                 cat = 'IMPRIMANTE';
             } else {
@@ -64,8 +77,7 @@ async function loadProducts() {
 
             return {
                 title: i.title,
-                // Converte preço de string "123,00" para número 123.00
-                price: parseFloat(String(i.price).replace(',', '.')),
+                price: finalPrice,
                 img: i.image,
                 link: i.link,
                 stock: parseInt(i.stock) || 0,
@@ -74,7 +86,6 @@ async function loadProducts() {
             };
         });
 
-        // Atualiza a interface
         renderHero();
         renderGrid();
         renderProductDetail();
@@ -104,7 +115,6 @@ function renderGrid() {
     if (sort === 'low') list.sort((a, b) => a.price - b.price);
     if (sort === 'high') list.sort((a, b) => b.price - a.price);
     
-    // Se estiver na home, mostra apenas 8
     if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
         if (search === '' && activeCategory === 'all') list = list.slice(0, 8);
     }
@@ -117,7 +127,7 @@ function renderGrid() {
                 <div class="price">${formatPrice(p.price)} €</div>
                 <div class="product-actions">
                     <a href="./product-detail.html?title=${encodeURIComponent(p.title)}" class="btn-details">Voir plus</a>
-                    <a href="${p.link}" target="_blank" class="btn-buy">SKILTEPRODUCTION</a>
+                    <a href="${p.link}" target="_blank" class="btn-buy">ACHETER MAINTENANT</a>
                 </div>
             </div>
         </article>
@@ -160,8 +170,8 @@ function renderProductDetail() {
                 </div>
 
                 <a href="${product.link}" target="_blank" class="btn-buy" 
-                   style="padding: 20px; font-size: 1.1rem; width: 100%; display: block; text-align: center; text-decoration: none; border-radius: 12px;">
-                    SKILTEPRODUCTION
+                   style="padding: 20px; font-size: 1.1rem; width: 100%; display: block; text-align: center; text-decoration: none; border-radius: 12px; background: #000; color: #fff;">
+                    ACHETER MAINTENANT
                 </a>
             </div>
         `;
