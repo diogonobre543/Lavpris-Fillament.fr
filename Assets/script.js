@@ -1,17 +1,20 @@
 /**
  * BILLIGT FILAMENT - JAVASCRIPT ENGINE 2026
  * Version Finale: Edition Skilteproduktion (Français)
+ * API ATUALIZADA: 9D20D11BF004359263F6665EB4676D07EB47FE50B55FE9D55EE6C9C2A9EA0CA5
  */
 
-const API_URL = 'https://www.datamarked.dk/?id=8016&apikey=AA99444E55D533FA3C0FB91A991CCA2C465F7C2BE0C89C4826A1852957DE2959';
+// URL DA NOVA API QUE VOCÊ PASSOU
+const API_URL = 'https://www.datamarked.dk/?id=8016&apikey=9D20D11BF004359263F6665EB4676D07EB47FE50B55FE9D55EE6C9C2A9EA0CA5';
+
 let allProducts = [];
 let activeCategory = 'all';
 
-// Filtres de Catégorie
+// Filtres de Catégorie (Keywords para organizar automaticamente)
 const materialKeywords = ['PLA', 'PETG', 'SILK', 'ABS', 'TPU', 'ASA', 'NYLON', 'WOOD', 'CARBON'];
 const printerKeywords = ['PRINTER', 'CREALITY', 'BAMBU', 'ANYCUBIC', 'ENDER', 'VORON', 'ELEGOO', 'MACHINE', 'RESIN'];
 
-// Formatage Prix (Danois)
+// Formatage Prix (Danois/Euro)
 const formatPrice = (p) => p.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /**
@@ -47,9 +50,11 @@ async function loadProducts() {
         const response = await fetch(API_URL);
         const data = await response.json();
 
+        // Mapeamento dos dados da API para o nosso formato
         allProducts = data.map(i => {
             const titleUpper = i.title.toUpperCase();
             let cat = 'AUTRES';
+            
             if (printerKeywords.some(k => titleUpper.includes(k))) {
                 cat = 'IMPRIMANTE';
             } else {
@@ -59,15 +64,17 @@ async function loadProducts() {
 
             return {
                 title: i.title,
+                // Converte preço de string "123,00" para número 123.00
                 price: parseFloat(String(i.price).replace(',', '.')),
                 img: i.image,
                 link: i.link,
                 stock: parseInt(i.stock) || 0,
                 category: cat,
-                description: i.description || `Filament de haute qualité ${cat} pour impression 3D professionnelle. Ce matériau assure une précision extrême, une excellente adhérence et une finition parfaite pour tous vos projets.`
+                description: i.description || `Filament de haute qualité ${cat} pour impression 3D professionnelle.`
             };
         });
 
+        // Atualiza a interface
         renderHero();
         renderGrid();
         renderProductDetail();
@@ -97,6 +104,7 @@ function renderGrid() {
     if (sort === 'low') list.sort((a, b) => a.price - b.price);
     if (sort === 'high') list.sort((a, b) => b.price - a.price);
     
+    // Se estiver na home, mostra apenas 8
     if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
         if (search === '' && activeCategory === 'all') list = list.slice(0, 8);
     }
@@ -153,7 +161,7 @@ function renderProductDetail() {
 
                 <a href="${product.link}" target="_blank" class="btn-buy" 
                    style="padding: 20px; font-size: 1.1rem; width: 100%; display: block; text-align: center; text-decoration: none; border-radius: 12px;">
-                   SKILTEPRODUCTION
+                    SKILTEPRODUCTION
                 </a>
             </div>
         `;
