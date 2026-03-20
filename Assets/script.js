@@ -1,21 +1,21 @@
 /**
  * BILLIGT FILAMENT - JAVASCRIPT ENGINE 2026
- * Versão Final: Skilteproduktion Edition
+ * Version Finale: Edition Skilteproduktion (Français)
  */
 
 const API_URL = 'https://www.datamarked.dk/?id=8016&apikey=AA99444E55D533FA3C0FB91A991CCA2C465F7C2BE0C89C4826A1852957DE2959';
 let allProducts = [];
 let activeCategory = 'all';
 
-// Filtros de Categoria
+// Filtres de Catégorie
 const materialKeywords = ['PLA', 'PETG', 'SILK', 'ABS', 'TPU', 'ASA', 'NYLON', 'WOOD', 'CARBON'];
 const printerKeywords = ['PRINTER', 'CREALITY', 'BAMBU', 'ANYCUBIC', 'ENDER', 'VORON', 'ELEGOO', 'MACHINE', 'RESIN'];
 
-// Formatação de Moeda (Danish)
-const formatPrice = (p) => p.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Formatage Prix (Danois)
+const formatPrice = (p) => p.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /**
- * 1. NAVEGAÇÃO MOBILE (HAMBURGUER)
+ * 1. NAVIGATION MOBILE (HAMBURGER)
  */
 function initNavigation() {
     const hamburger = document.getElementById('hamburger');
@@ -26,12 +26,9 @@ function initNavigation() {
     hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('open');
         mainNav.classList.toggle('active');
-        
-        // Impede scroll do corpo quando menu está aberto
         document.body.style.overflow = mainNav.classList.contains('active') ? 'hidden' : 'auto';
     });
 
-    // Fecha o menu ao clicar em um link
     const navLinks = mainNav.querySelectorAll('a');
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
@@ -43,7 +40,7 @@ function initNavigation() {
 }
 
 /**
- * 2. CARREGAR DADOS DA API
+ * 2. CHARGEMENT DES PRODUITS DE L'API
  */
 async function loadProducts() {
     try {
@@ -52,12 +49,12 @@ async function loadProducts() {
 
         allProducts = data.map(i => {
             const titleUpper = i.title.toUpperCase();
-            let cat = 'ANDRE';
+            let cat = 'AUTRES';
             if (printerKeywords.some(k => titleUpper.includes(k))) {
-                cat = 'PRINTER';
+                cat = 'IMPRIMANTE';
             } else {
                 const found = materialKeywords.find(m => titleUpper.includes(m));
-                cat = found || 'ANDRE';
+                cat = found || 'AUTRES';
             }
 
             return {
@@ -67,23 +64,22 @@ async function loadProducts() {
                 link: i.link,
                 stock: parseInt(i.stock) || 0,
                 category: cat,
-                description: i.description || `Høj kvalitet ${cat} filament til professionel 3D-print. Dette materiale sikrer ekstrem præcision, stærk vedhæftning og en flot overfladefinish på alle dine projekter.`
+                description: i.description || `Filament de haute qualité ${cat} pour impression 3D professionnelle. Ce matériau assure une précision extrême, une excellente adhérence et une finition parfaite pour tous vos projets.`
             };
         });
 
-        // Inicializa as views
         renderHero();
         renderGrid();
         renderProductDetail();
         createFilterButtons();
 
     } catch (error) {
-        console.error("Erro ao carregar API:", error);
+        console.error("Erreur lors du chargement de l'API :", error);
     }
 }
 
 /**
- * 3. RENDERIZAR GRID (PÁGINA DE PRODUTOS)
+ * 3. AFFICHAGE DE LA GRILLE DE PRODUITS
  */
 function renderGrid() {
     const grid = document.getElementById('productGrid');
@@ -101,7 +97,6 @@ function renderGrid() {
     if (sort === 'low') list.sort((a, b) => a.price - b.price);
     if (sort === 'high') list.sort((a, b) => b.price - a.price);
     
-    // Limite na Home
     if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
         if (search === '' && activeCategory === 'all') list = list.slice(0, 8);
     }
@@ -111,10 +106,10 @@ function renderGrid() {
             <div class="img-wrapper"><img src="${p.img}" loading="lazy" alt="${p.title}"></div>
             <div class="product-info">
                 <h3>${p.title}</h3>
-                <div class="price">${formatPrice(p.price)} kr.</div>
+                <div class="price">${formatPrice(p.price)} €</div>
                 <div class="product-actions">
-                    <a href="./product-detail.html?title=${encodeURIComponent(p.title)}" class="btn-details">Læs mere</a>
-                    <a href="${p.link}" target="_blank" class="btn-buy">SKILTEPRODUKTION</a>
+                    <a href="./product-detail.html?title=${encodeURIComponent(p.title)}" class="btn-details">Voir plus</a>
+                    <a href="${p.link}" target="_blank" class="btn-buy">SKILTEPRODUCTION</a>
                 </div>
             </div>
         </article>
@@ -122,7 +117,7 @@ function renderGrid() {
 }
 
 /**
- * 4. RENDERIZAR PÁGINA DE DETALHES
+ * 4. AFFICHAGE PAGE DÉTAILS PRODUIT
  */
 function renderProductDetail() {
     const container = document.getElementById('product-detail-render');
@@ -139,26 +134,26 @@ function renderProductDetail() {
             </div>
             <div class="detail-content">
                 <span class="stock-tag" style="font-weight:800; color: ${product.stock > 0 ? '#10b981' : '#ef4444'}">
-                    ${product.stock > 0 ? '● PÅ LAGER' : '○ UDSOLGT'}
+                    ${product.stock > 0 ? '● EN STOCK' : '○ RUPTURE'}
                 </span>
                 <h1 style="margin: 10px 0;">${product.title}</h1>
                 <div class="detail-price" style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 20px;">
-                    ${formatPrice(product.price)} kr.
+                    ${formatPrice(product.price)} €
                 </div>
                 
                 <div class="meta-box" style="background: var(--ice); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
-                    <p style="margin-bottom: 8px;"><strong>Kategori:</strong> ${product.category}</p>
-                    <p><strong>Lagerstatus:</strong> ${product.stock} stk.</p>
+                    <p style="margin-bottom: 8px;"><strong>Catégorie :</strong> ${product.category}</p>
+                    <p><strong>Stock :</strong> ${product.stock} pcs</p>
                 </div>
 
                 <div class="product-description" style="margin-bottom: 30px;">
-                    <h4 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: var(--slate); margin-bottom: 10px;">Beskrivelse</h4>
+                    <h4 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: var(--slate); margin-bottom: 10px;">Description</h4>
                     <p style="line-height: 1.8; color: #475569;">${product.description}</p>
                 </div>
 
                 <a href="${product.link}" target="_blank" class="btn-buy" 
                    style="padding: 20px; font-size: 1.1rem; width: 100%; display: block; text-align: center; text-decoration: none; border-radius: 12px;">
-                   SKILTEPRODUKTION
+                   SKILTEPRODUCTION
                 </a>
             </div>
         `;
@@ -166,23 +161,23 @@ function renderProductDetail() {
 }
 
 /**
- * 5. HERO (HOME)
+ * 5. HERO (ACCUEIL)
  */
 function renderHero() {
     const pBox = document.getElementById('hero-random-printer');
     const mBox = document.getElementById('hero-random-material');
     if (!pBox || !mBox) return;
 
-    const printers = allProducts.filter(p => p.category === 'PRINTER');
-    const mats = allProducts.filter(p => p.category !== 'PRINTER' && p.category !== 'ANDRE');
+    const printers = allProducts.filter(p => p.category === 'IMPRIMANTE');
+    const mats = allProducts.filter(p => p.category !== 'IMPRIMANTE' && p.category !== 'AUTRES');
 
     const card = (item) => `
         <div class="product-card" style="width: 220px; box-shadow: var(--shadow);">
             <div class="img-wrapper" style="height: 160px;"><img src="${item.img}"></div>
             <div class="product-info" style="padding: 10px;">
                 <h3 style="font-size: 0.85rem; min-height: 2.2rem;">${item.title}</h3>
-                <div class="price" style="font-size: 1.1rem; margin-bottom: 10px;">${formatPrice(item.price)} kr.</div>
-                <a href="./product-detail.html?title=${encodeURIComponent(item.title)}" class="btn-details" style="font-size: 0.75rem; padding: 8px; display: block;">Se detaljer</a>
+                <div class="price" style="font-size: 1.1rem; margin-bottom: 10px;">${formatPrice(item.price)} €</div>
+                <a href="./product-detail.html?title=${encodeURIComponent(item.title)}" class="btn-details" style="font-size: 0.75rem; padding: 8px; display: block;">Voir détails</a>
             </div>
         </div>`;
     
@@ -191,16 +186,16 @@ function renderHero() {
 }
 
 /**
- * 6. BOTÕES DE FILTRO
+ * 6. BOUTONS DE FILTRE
  */
 function createFilterButtons() {
     const box = document.getElementById('materialBoxes');
     if (!box) return;
 
-    const cats = ['all', 'PRINTER', ...new Set(allProducts.map(p => p.category).filter(c => c !== 'PRINTER' && c !== 'ANDRE'))].sort();
+    const cats = ['all', 'IMPRIMANTE', ...new Set(allProducts.map(p => p.category).filter(c => c !== 'IMPRIMANTE' && c !== 'AUTRES'))].sort();
     box.innerHTML = cats.map(c => `
         <button class="material-btn ${c === activeCategory ? 'active' : ''}" onclick="changeCategory('${c}')">
-            ${c === 'all' ? 'Alle' : c}
+            ${c === 'all' ? 'Tous' : c}
         </button>
     `).join('');
 }
@@ -211,7 +206,7 @@ window.changeCategory = (cat) => {
     renderGrid();
 };
 
-// Inicialização Global
+// Initialisation Globale
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     loadProducts();
